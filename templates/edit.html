@@ -1,0 +1,63 @@
+{% extends "base.html" %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-10">
+    <div class="card shadow-sm p-4 bg-white mb-5">
+      <h2 class="mb-4 text-center text-primary">📝 Редактирование урока</h2>
+      <form action="/lesson/{{ lesson.id }}/edit" method="post">
+        <div class="mb-3">
+          <label for="course_name" class="form-label"
+            >Название модуля/папки курса</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="course_name"
+            name="course_name"
+            value="{{ lesson.course_name }}"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="title" class="form-label">Название урока</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            value="{{ lesson.title }}"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="summary_content" class="form-label"
+            >Содержимое выжимки (Markdown)</label
+          >
+          <textarea
+            class="form-control"
+            id="summary_content"
+            name="summary_content"
+            rows="18"
+            required
+            style="font-family: monospace; font-size: 0.95rem"
+          >
+{{ lesson.summary_content }}</textarea
+          >
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+          <a
+            href="/lesson/{{ lesson.id }}"
+            class="btn btn-outline-secondary me-md-2"
+            >Отмена</a
+          >
+          <button type="submit" class="btn btn-primary">
+            Сохранить изменения
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

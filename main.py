@@ -37,6 +37,41 @@ async def upload_page(request: Request):
     return templates.TemplateResponse(request=request, name="upload.html", context={})
 
 
+@app.get("/lesson/{lesson_id}/edit", response_class=HTMLResponse)
+async def edit_page(lesson_id: int, request: Request, db: Session = Depends(get_db)):
+    lesson = db.query(models.Lesson).filter(models.Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+
+    return templates.TemplateResponse(
+        request=request, name="edit.html", context={"lesson": lesson}
+    )
+
+
+# Обработчик сохранения изменений
+@app.post("/lesson/{lesson_id}/edit")
+async def handle_edit(
+    lesson_id: int,
+    course_name: str = Form(...),
+    title: str = Form(...),
+    summary_content: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    lesson = db.query(models.Lesson).filter(models.Lesson.id == lesson_id).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="Lesson not found")
+
+    # Обновляем поля в базе данных
+    lesson.course_name = course_name
+    lesson.title = title
+    lesson.summary_content = summary_content
+
+    db.commit()
+
+    # Возвращаем пользователя на страницу этого урока
+    return RedirectResponse(url=f"/lesson/{lesson_id}", status_code=303)
+
+
 # Обработчик загрузки
 @app.post("/upload")
 async def handle_upload(
