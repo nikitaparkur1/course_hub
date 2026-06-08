@@ -1,38 +1,40 @@
 {% extends "base.html" %} {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="card shadow-sm p-4 bg-white">
-      <h2 class="mb-4 text-center">Добавить новый урок</h2>
+  <div class="col-lg-8 col-md-10">
+    <div class="card p-4 p-md-5 bg-white">
+      <h2 class="mb-4 text-center fw-bold text-dark">Добавить новый урок</h2>
       <form action="/upload" method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-          <label for="course_name" class="form-label"
-            >Название модуля/папки курса</label
+        <div class="mb-4">
+          <label for="course_name" class="form-label fw-semibold"
+            >Название курса / модуля</label
           >
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-lg"
             id="course_name"
             name="course_name"
-            placeholder="Например: [Supersliv.biz] 1. Подготовка к системе"
+            placeholder="Например: Основы Python"
             required
           />
         </div>
 
-        <div class="mb-3">
-          <label for="title" class="form-label">Название урока</label>
+        <div class="mb-4">
+          <label for="title" class="form-label fw-semibold"
+            >Название урока</label
+          >
           <input
             type="text"
-            class="form-control"
+            class="form-control form-control-lg"
             id="title"
             name="title"
-            placeholder="Например: 1 Как перейти на новый уровень жизни"
+            placeholder="Например: 1. Установка окружения"
             required
           />
         </div>
 
-        <div class="mb-3">
-          <label for="summary_file" class="form-label"
-            >Файл выжимки (результат в .md формате)</label
+        <div class="mb-4 p-3 bg-light rounded border">
+          <label for="summary_file" class="form-label fw-semibold text-primary"
+            >📄 Файл выжимки (.md)</label
           >
           <input
             class="form-control"
@@ -42,11 +44,14 @@
             accept=".md"
             required
           />
+          <div class="form-text">
+            Главный текстовый файл урока в формате Markdown.
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="srt_file" class="form-label"
-            >Файл субтитров (.srt) — опционально</label
+        <div class="mb-4 p-3 bg-light rounded border">
+          <label for="srt_file" class="form-label fw-semibold text-success"
+            >🎞️ Файл субтитров (.srt) — опционально</label
           >
           <input
             class="form-control"
@@ -55,13 +60,18 @@
             name="srt_file"
             accept=".srt"
           />
+          <div class="form-text">
+            Используется для RAG-системы и AI-поиска по видео.
+          </div>
         </div>
 
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary">
-            Загрузить в Базу Знаний
+        <div class="d-flex flex-column flex-md-row gap-3 mt-5">
+          <button type="submit" class="btn btn-primary btn-lg flex-fill">
+            Загрузить в Базу
           </button>
-          <a href="/" class="btn btn-outline-secondary">Отмена</a>
+          <a href="/" class="btn btn-light btn-lg border flex-fill text-center"
+            >Отмена</a
+          >
         </div>
       </form>
     </div>

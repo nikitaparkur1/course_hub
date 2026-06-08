@@ -1,44 +1,113 @@
 {% extends "base.html" %} {% block content %}
 <div class="row">
-  <div class="col-md-12 mb-3">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Главная</a></li>
-        <li class="breadcrumb-item active" aria-current="page">
-          {{ lesson.title }}
-        </li>
-      </ol>
-    </nav>
+  <div class="col-12 mb-3">
+    <!-- Обертка для кнопки Назад и хлебных крошек -->
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <!-- Удобная кнопка Назад сверху -->
+      <a
+        href="/"
+        class="btn btn-white bg-white text-dark shadow-sm border py-2 px-3 d-inline-flex align-items-center"
+        style="border-radius: 8px"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="currentColor"
+          class="bi bi-arrow-left me-2"
+          viewBox="0 0 16 16"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
+          />
+        </svg>
+        Назад
+      </a>
+
+      <!-- Хлебные крошки -->
+      <nav aria-label="breadcrumb" class="flex-grow-1">
+        <ol
+          class="breadcrumb bg-white p-3 rounded-3 shadow-sm m-0 d-flex align-items-center"
+        >
+          <li class="breadcrumb-item">
+            <a href="/" class="text-decoration-none">Главная</a>
+          </li>
+          <li
+            class="breadcrumb-item text-muted text-truncate"
+            style="max-width: 200px"
+          >
+            {{ lesson.course_name }}
+          </li>
+          <li
+            class="breadcrumb-item active fw-bold text-truncate"
+            style="max-width: 250px"
+            aria-current="page"
+          >
+            {{ lesson.title }}
+          </li>
+        </ol>
+      </nav>
+    </div>
   </div>
+</div>
 
-<div class="card shadow-sm p-4 bg-white mb-4">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <h1 class="text-primary m-0">{{ lesson.title }}</h1>
-                <a href="/lesson/{{ lesson.id }}/edit" class="btn btn-outline-warning btn-sm">📝 Редактировать</a>
-            </div>
-            <h6 class="text-muted mb-4">Раздел: {{ lesson.course_name }}</h6>
-            <hr>
+<div class="row">
+  <!-- Основной контент (9 колонок на ПК, 12 на мобилке) -->
+  <div class="col-lg-9 mb-4">
+    <div class="card p-4 p-md-5 bg-white">
+      <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+      >
+        <h1 class="text-dark fw-bold mb-3 mb-md-0">{{ lesson.title }}</h1>
+        <a
+          href="/lesson/{{ lesson.id }}/edit"
+          class="btn btn-outline-warning btn-sm text-nowrap"
+          >📝 Редактировать</a
+        >
+      </div>
+      <hr class="mt-0 mb-4 text-muted" />
 
-      <!-- Место для отображения Markdown -->
+      <!-- Контейнер Markdown -->
       <div class="markdown-body">{{ html_summary | safe }}</div>
+
+      <!-- Кнопка "На главную" снизу урока -->
+      <div class="mt-5 pt-4 border-top text-center">
+        <a
+          href="/"
+          class="btn btn-primary px-4 py-2 shadow-sm d-inline-flex align-items-center"
+          style="border-radius: 8px"
+        >
+          <span class="me-2">🏠</span> На главную
+        </a>
+      </div>
     </div>
   </div>
 
-  <!-- Боковая панель (RAG информация или метаданные) -->
-  <div class="col-md-3">
-    <div class="card shadow-sm p-3 bg-light">
-      <h5>Метаданные</h5>
-      <p class="small text-muted">
-        Добавлено: {{ lesson.created_at.strftime('%d.%m.%Y %H:%M') }}
-      </p>
+  <!-- Боковая панель (3 колонки на ПК, 12 на мобилке) -->
+  <div class="col-lg-3">
+    <div class="card p-4 bg-white sticky-top" style="top: 20px">
+      <h5 class="fw-bold">Информация</h5>
       <hr />
+      <div class="mb-3">
+        <small class="text-muted d-block mb-1">Раздел:</small>
+        <span class="fw-semibold">{{ lesson.course_name }}</span>
+      </div>
+      <div class="mb-3">
+        <small class="text-muted d-block mb-1">Добавлено:</small>
+        <span>{{ lesson.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+      </div>
+
+      <hr />
+      <h6 class="fw-bold mb-3">Материалы RAG</h6>
       {% if lesson.srt_content %}
-      <span class="badge bg-success mb-2">Тайминги (SRT) загружены</span>
-      <p class="small text-muted">
-        Файл субтитров готов к использованию в RAG-системе.
-      </p>
+      <div class="alert alert-success p-2 text-center" role="alert">
+        <small>✅ Субтитры (SRT) загружены</small>
+      </div>
       {% else %}
-      <span class="badge bg-warning text-dark mb-2">Нет таймингов</span>
+      <div class="alert alert-secondary p-2 text-center" role="alert">
+        <small>❌ Нет файла субтитров</small>
+      </div>
       {% endif %}
     </div>
   </div>

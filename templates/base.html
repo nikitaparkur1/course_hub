@@ -4,35 +4,93 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>База Знаний Курсов</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <!-- GitHub Markdown CSS (для красивого отображения текста) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css"
+    />
     <style>
       body {
-        background-color: #f8f9fa;
+        font-family: "Inter", sans-serif;
+        background-color: #f4f7f6;
+        color: #333;
       }
-      .navbar-brand {
-        font-weight: bold;
+      .navbar {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+        transition: transform 0.2s ease-in-out;
+      }
+      /* Стили для таблиц и кода в Markdown, чтобы не ломали мобилку */
+      .markdown-body table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .markdown-body pre {
+        overflow-x: auto;
+        border-radius: 8px;
+      }
+      .markdown-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      .btn {
+        border-radius: 8px;
+        font-weight: 500;
       }
     </style>
   </head>
   <body>
     <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 py-3">
       <div class="container">
-        <a class="navbar-brand" href="/">📚 База Знаний</a>
-        <div class="d-flex">
-          <a href="/upload" class="btn btn-success btn-sm">➕ Добавить урок</a>
+        <a class="navbar-brand fw-bold" href="/">📚 База Знаний</a>
+        <!-- Кнопка-бургер для мобилок -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse justify-content-end"
+          id="navbarNav"
+        >
+          <ul class="navbar-nav mt-3 mt-lg-0">
+            <li class="nav-item">
+              <a href="/upload" class="btn btn-success w-100"
+                >➕ Добавить урок</a
+              >
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
 
     <!-- Основной контент -->
-    <div class="container">{% block content %}{% endblock %}</div>
+    <div class="container pb-5">{% block content %}{% endblock %}</div>
 
-    <!-- Bootstrap JS Bundle -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

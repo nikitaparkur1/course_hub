@@ -1,46 +1,52 @@
 {% extends "base.html" %} {% block content %}
 <div class="row">
-  <div class="col-md-12">
-    <h2 class="mb-4 text-secondary">Мои курсы и материалы</h2>
+  <div class="col-12">
+    <h2 class="mb-4 fw-bold text-dark">Мои курсы</h2>
 
     {% if not grouped_lessons %}
-    <div class="alert alert-info" role="alert">
-      Здесь пока ничего нет. Загрузи свою первую выжимку!
+    <div
+      class="alert alert-info rounded-3 border-0 shadow-sm p-4 text-center"
+      role="alert"
+    >
+      <h4 class="alert-heading mb-3">Здесь пока пусто</h4>
+      <p>Загрузи свою первую выжимку, чтобы начать формировать базу знаний.</p>
+      <a href="/upload" class="btn btn-primary mt-2">Добавить урок</a>
     </div>
     {% else %} {% for course, lessons in grouped_lessons.items() %}
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-secondary text-white">
-        <h4 class="mb-0">{{ course }}</h4>
+    <div class="card mb-4">
+      <div class="card-header bg-white border-bottom-0 pt-4 pb-2">
+        <h4 class="mb-0 fw-bold text-primary">{{ course }}</h4>
       </div>
-      <div class="list-group list-group-flush">
+      <div class="list-group list-group-flush px-3 pb-3">
         {% for lesson in lessons %}
         <div
-          class="list-group-item d-flex justify-content-between align-items-center"
+          class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-md-center py-3 border-0 border-bottom"
         >
           <a
             href="/lesson/{{ lesson.id }}"
-            class="text-decoration-none text-dark fw-semibold"
+            class="text-decoration-none text-dark fw-semibold mb-3 mb-md-0 fs-5"
           >
             📖 {{ lesson.title }}
           </a>
-          <div class="btn-group">
+          <!-- Обертка для кнопок, чтобы на мобилках они растягивались -->
+          <div class="d-flex gap-2">
             <a
               href="/lesson/{{ lesson.id }}"
-              class="btn btn-outline-primary btn-sm"
+              class="btn btn-outline-primary btn-sm flex-fill"
               >Открыть</a
             >
             <a
               href="/lesson/{{ lesson.id }}/edit"
-              class="btn btn-outline-warning btn-sm"
-              >Редактировать</a
+              class="btn btn-outline-warning btn-sm flex-fill"
+              >Изменить</a
             >
             <form
               action="/lesson/{{ lesson.id }}/delete"
               method="post"
-              onsubmit="return confirm('Вы уверены?');"
-              style="display: inline"
+              onsubmit="return confirm('Удалить урок навсегда?');"
+              class="d-flex flex-fill"
             >
-              <button type="submit" class="btn btn-outline-danger btn-sm">
+              <button type="submit" class="btn btn-outline-danger btn-sm w-100">
                 Удалить
               </button>
             </form>

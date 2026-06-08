@@ -1,59 +1,66 @@
 {% extends "base.html" %} {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-10">
-    <div class="card shadow-sm p-4 bg-white mb-5">
-      <h2 class="mb-4 text-center text-primary">📝 Редактирование урока</h2>
+  <div class="col-lg-10">
+    <div class="card p-4 p-md-5 bg-white">
+      <div class="d-flex align-items-center mb-4">
+        <a href="/lesson/{{ lesson.id }}" class="btn btn-light border me-3"
+          >← Назад</a
+        >
+        <h2 class="m-0 fw-bold text-dark">Редактирование урока</h2>
+      </div>
+
       <form action="/lesson/{{ lesson.id }}/edit" method="post">
-        <div class="mb-3">
-          <label for="course_name" class="form-label"
-            >Название модуля/папки курса</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            id="course_name"
-            name="course_name"
-            value="{{ lesson.course_name }}"
-            required
-          />
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label for="course_name" class="form-label fw-semibold"
+              >Курс / Модуль</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="course_name"
+              name="course_name"
+              value="{{ lesson.course_name }}"
+              required
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="title" class="form-label fw-semibold"
+              >Название урока</label
+            >
+            <input
+              type="text"
+              class="form-control"
+              id="title"
+              name="title"
+              value="{{ lesson.title }}"
+              required
+            />
+          </div>
         </div>
 
-        <div class="mb-3">
-          <label for="title" class="form-label">Название урока</label>
-          <input
-            type="text"
-            class="form-control"
-            id="title"
-            name="title"
-            value="{{ lesson.title }}"
-            required
-          />
-        </div>
-
-        <div class="mb-3">
-          <label for="summary_content" class="form-label"
-            >Содержимое выжимки (Markdown)</label
+        <div class="mb-4 mt-3">
+          <label for="summary_content" class="form-label fw-semibold"
+            >Содержимое (Markdown)</label
           >
           <textarea
-            class="form-control"
+            class="form-control bg-light"
             id="summary_content"
             name="summary_content"
-            rows="18"
+            rows="20"
             required
-            style="font-family: monospace; font-size: 0.95rem"
+            style="
+              font-family: &quot;Courier New&quot;, Courier, monospace;
+              font-size: 0.9rem;
+            "
           >
 {{ lesson.summary_content }}</textarea
           >
         </div>
 
-        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-          <a
-            href="/lesson/{{ lesson.id }}"
-            class="btn btn-outline-secondary me-md-2"
-            >Отмена</a
-          >
-          <button type="submit" class="btn btn-primary">
-            Сохранить изменения
+        <div class="d-flex gap-3 justify-content-end">
+          <button type="submit" class="btn btn-primary btn-lg px-5">
+            Сохранить
           </button>
         </div>
       </form>
