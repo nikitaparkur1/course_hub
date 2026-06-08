@@ -1,0 +1,50 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-md-12">
+    <h2 class="mb-4 text-secondary">Мои курсы и материалы</h2>
+
+    {% if not grouped_lessons %}
+    <div class="alert alert-info" role="alert">
+      Здесь пока ничего нет. Загрузи свою первую выжимку!
+    </div>
+    {% else %} {% for course, lessons in grouped_lessons.items() %}
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-secondary text-white">
+        <h4 class="mb-0">{{ course }}</h4>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for lesson in lessons %}
+        <div
+          class="list-group-item d-flex justify-content-between align-items-center"
+        >
+          <a
+            href="/lesson/{{ lesson.id }}"
+            class="text-decoration-none text-dark fw-semibold"
+          >
+            📖 {{ lesson.title }}
+          </a>
+          <div class="btn-group">
+            <a
+              href="/lesson/{{ lesson.id }}"
+              class="btn btn-outline-primary btn-sm"
+              >Открыть</a
+            >
+            <form
+              action="/lesson/{{ lesson.id }}/delete"
+              method="post"
+              onsubmit="return confirm('Вы уверены?');"
+              style="display: inline"
+            >
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                Удалить
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %} {% endif %}
+  </div>
+</div>
+{% endblock %}

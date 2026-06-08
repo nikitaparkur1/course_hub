@@ -1,0 +1,70 @@
+{% extends "base.html" %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm p-4 bg-white">
+      <h2 class="mb-4 text-center">Добавить новый урок</h2>
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="course_name" class="form-label"
+            >Название модуля/папки курса</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="course_name"
+            name="course_name"
+            placeholder="Например: [Supersliv.biz] 1. Подготовка к системе"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="title" class="form-label">Название урока</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            placeholder="Например: 1 Как перейти на новый уровень жизни"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="summary_file" class="form-label"
+            >Файл выжимки (результат в .md формате)</label
+          >
+          <input
+            class="form-control"
+            type="file"
+            id="summary_file"
+            name="summary_file"
+            accept=".md"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="srt_file" class="form-label"
+            >Файл субтитров (.srt) — опционально</label
+          >
+          <input
+            class="form-control"
+            type="file"
+            id="srt_file"
+            name="srt_file"
+            accept=".srt"
+          />
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">
+            Загрузить в Базу Знаний
+          </button>
+          <a href="/" class="btn btn-outline-secondary">Отмена</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

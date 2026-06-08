@@ -1,0 +1,44 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-md-12 mb-3">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Главная</a></li>
+        <li class="breadcrumb-item active" aria-current="page">
+          {{ lesson.title }}
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="col-md-9">
+    <div class="card shadow-sm p-4 bg-white mb-4">
+      <h1 class="mb-2 text-primary">{{ lesson.title }}</h1>
+      <h6 class="text-muted mb-4">Раздел: {{ lesson.course_name }}</h6>
+      <hr />
+
+      <!-- Место для отображения Markdown -->
+      <div class="markdown-body">{{ html_summary | safe }}</div>
+    </div>
+  </div>
+
+  <!-- Боковая панель (RAG информация или метаданные) -->
+  <div class="col-md-3">
+    <div class="card shadow-sm p-3 bg-light">
+      <h5>Метаданные</h5>
+      <p class="small text-muted">
+        Добавлено: {{ lesson.created_at.strftime('%d.%m.%Y %H:%M') }}
+      </p>
+      <hr />
+      {% if lesson.srt_content %}
+      <span class="badge bg-success mb-2">Тайминги (SRT) загружены</span>
+      <p class="small text-muted">
+        Файл субтитров готов к использованию в RAG-системе.
+      </p>
+      {% else %}
+      <span class="badge bg-warning text-dark mb-2">Нет таймингов</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
