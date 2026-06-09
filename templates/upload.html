@@ -1,80 +1,175 @@
 {% extends "base.html" %} {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-8 col-md-10">
-    <div class="card p-4 p-md-5 bg-white">
-      <h2 class="mb-4 text-center fw-bold text-dark">Добавить новый урок</h2>
-      <form action="/upload" method="post" enctype="multipart/form-data">
-        <div class="mb-4">
-          <label for="course_name" class="form-label fw-semibold"
-            >Название курса / модуля</label
+<div class="max-w-2xl mx-auto">
+  <div class="mb-8">
+    <a
+      href="/"
+      class="text-sm text-zinc-500 hover:text-zinc-900 flex items-center gap-2 w-fit mb-4"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      Назад
+    </a>
+    <h1 class="text-3xl font-bold tracking-tight text-zinc-950">
+      Добавление материала
+    </h1>
+    <p class="text-zinc-500 mt-2">
+      Заполните данные для создания нового урока.
+    </p>
+  </div>
+
+  <form
+    action="/upload"
+    method="post"
+    enctype="multipart/form-data"
+    class="bg-white border border-zinc-200 rounded-2xl p-8 space-y-8"
+  >
+    <!-- Блок модуля -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+        Модуль / Курс
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            for="course_name"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Название модуля</label
           >
           <input
             type="text"
-            class="form-control form-control-lg"
             id="course_name"
             name="course_name"
-            placeholder="Например: Основы Python"
+            list="courses_list"
             required
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+            placeholder="Например: Основы Python"
           />
+          <!-- Выпадающий список существующих курсов -->
+          <datalist id="courses_list">
+            {% for c in courses %}
+            <option value="{{ c.name }}"></option>
+            {% endfor %}
+          </datalist>
         </div>
-
-        <div class="mb-4">
-          <label for="title" class="form-label fw-semibold"
-            >Название урока</label
+        <div>
+          <label
+            for="author"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Автор (опционально)</label
           >
           <input
             type="text"
-            class="form-control form-control-lg"
+            id="author"
+            name="author"
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+            placeholder="Иван Иванов"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Блок урока -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+        Информация об уроке
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="md:col-span-3">
+          <label
+            for="title"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Тема урока</label
+          >
+          <input
+            type="text"
             id="title"
             name="title"
-            placeholder="Например: 1. Установка окружения"
             required
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+            placeholder="Установка окружения"
           />
         </div>
-
-        <div class="mb-4 p-3 bg-light rounded border">
-          <label for="summary_file" class="form-label fw-semibold text-primary"
-            >📄 Файл выжимки (.md)</label
+        <div>
+          <label
+            for="order_number"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Номер</label
           >
           <input
-            class="form-control"
-            type="file"
-            id="summary_file"
-            name="summary_file"
-            accept=".md"
+            type="number"
+            id="order_number"
+            name="order_number"
             required
+            value="1"
+            min="1"
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
           />
-          <div class="form-text">
-            Главный текстовый файл урока в формате Markdown.
-          </div>
         </div>
-
-        <div class="mb-4 p-3 bg-light rounded border">
-          <label for="srt_file" class="form-label fw-semibold text-success"
-            >🎞️ Файл субтитров (.srt) — опционально</label
-          >
-          <input
-            class="form-control"
-            type="file"
-            id="srt_file"
-            name="srt_file"
-            accept=".srt"
-          />
-          <div class="form-text">
-            Используется для RAG-системы и AI-поиска по видео.
-          </div>
-        </div>
-
-        <div class="d-flex flex-column flex-md-row gap-3 mt-5">
-          <button type="submit" class="btn btn-primary btn-lg flex-fill">
-            Загрузить в Базу
-          </button>
-          <a href="/" class="btn btn-light btn-lg border flex-fill text-center"
-            >Отмена</a
-          >
-        </div>
-      </form>
+      </div>
     </div>
-  </div>
+
+    <!-- Файлы -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+        Файлы
+      </h3>
+
+      <div>
+        <label
+          for="summary_file"
+          class="block text-sm font-medium text-zinc-700 mb-1"
+          >Конспект (.md) <span class="text-red-500">*</span></label
+        >
+        <input
+          type="file"
+          id="summary_file"
+          name="summary_file"
+          accept=".md"
+          required
+          class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 transition-colors"
+        />
+      </div>
+
+      <div>
+        <label
+          for="srt_file"
+          class="block text-sm font-medium text-zinc-700 mb-1 mt-4"
+          >Субтитры RAG (.srt)</label
+        >
+        <input
+          type="file"
+          id="srt_file"
+          name="srt_file"
+          accept=".srt"
+          class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 transition-colors"
+        />
+        <p class="text-xs text-zinc-400 mt-1">
+          Опционально. Используется для поиска по видео.
+        </p>
+      </div>
+    </div>
+
+    <div class="pt-4 flex gap-4">
+      <button
+        type="submit"
+        class="px-6 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-md hover:bg-zinc-800 transition-colors w-full md:w-auto"
+      >
+        Сохранить урок
+      </button>
+    </div>
+  </form>
 </div>
 {% endblock %}

@@ -1,115 +1,343 @@
 {% extends "base.html" %} {% block content %}
-<div class="row">
-  <div class="col-12 mb-3">
-    <!-- Обертка для кнопки Назад и хлебных крошек -->
-    <div class="d-flex align-items-center flex-wrap gap-2">
-      <!-- Удобная кнопка Назад сверху -->
+<!-- Кнопки управления и Offcanvas Trigger -->
+<div class="flex justify-between items-center mb-8">
+  <div class="flex items-center gap-3">
+    <a
+      href="/course/{{ course.id }}"
+      class="p-2 border border-zinc-200 rounded-md bg-white hover:bg-zinc-50 transition-colors text-zinc-600"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+    </a>
+    <!-- Кнопка вызова меню модуля -->
+    <button
+      onclick="toggleSidebar()"
+      class="flex items-center gap-2 px-3 py-2 bg-white border border-zinc-200 rounded-md text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+      Оглавление модуля
+    </button>
+  </div>
+
+  <div class="flex gap-2">
+    <a
+      href="/lesson/{{ lesson.id }}/edit"
+      class="px-3 py-2 border border-zinc-200 bg-white text-zinc-700 text-sm font-medium rounded-md hover:bg-zinc-50 transition-colors"
+      >Редактировать</a
+    >
+  </div>
+</div>
+
+<div class="flex flex-col lg:flex-row gap-10 relative">
+  <!-- Основной контент (Markdown) -->
+  <article
+    class="flex-grow bg-white border border-zinc-200 rounded-2xl p-8 lg:p-12 shadow-sm min-h-[600px]"
+  >
+    <div class="mb-10">
+      <span class="text-zinc-500 font-medium text-sm tracking-wide"
+        >{{ course.name }} — Урок {{ lesson.order_number }}</span
+      >
+      <h1 class="text-4xl font-bold text-zinc-950 mt-2">{{ lesson.title }}</h1>
+    </div>
+
+    <div class="prose prose-zinc max-w-none text-zinc-800 leading-relaxed">
+      {{ html_summary | safe }}
+    </div>
+    <!-- Навигация по страницам уроков (Пагинация) -->
+    <div
+      class="mt-12 pt-8 border-t border-zinc-100 flex items-center justify-center gap-1.5"
+    >
+      <!-- Стрелочка Назад -->
+      {% if prev_lesson %}
       <a
-        href="/"
-        class="btn btn-white bg-white text-dark shadow-sm border py-2 px-3 d-inline-flex align-items-center"
-        style="border-radius: 8px"
+        href="/lesson/{{ prev_lesson.id }}"
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:border-zinc-300 transition-colors duration-200"
+        title="Предыдущий урок"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
-          fill="currentColor"
-          class="bi bi-arrow-left me-2"
-          viewBox="0 0 16 16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
         >
-          <path
-            fill-rule="evenodd"
-            d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"
-          />
+          <path d="m15 18-6-6 6-6" />
         </svg>
-        Назад
       </a>
-
-      <!-- Хлебные крошки -->
-      <nav aria-label="breadcrumb" class="flex-grow-1">
-        <ol
-          class="breadcrumb bg-white p-3 rounded-3 shadow-sm m-0 d-flex align-items-center"
-        >
-          <li class="breadcrumb-item">
-            <a href="/" class="text-decoration-none">Главная</a>
-          </li>
-          <li
-            class="breadcrumb-item text-muted text-truncate"
-            style="max-width: 200px"
-          >
-            {{ lesson.course_name }}
-          </li>
-          <li
-            class="breadcrumb-item active fw-bold text-truncate"
-            style="max-width: 250px"
-            aria-current="page"
-          >
-            {{ lesson.title }}
-          </li>
-        </ol>
-      </nav>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <!-- Основной контент (9 колонок на ПК, 12 на мобилке) -->
-  <div class="col-lg-9 mb-4">
-    <div class="card p-4 p-md-5 bg-white">
-      <div
-        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
-      >
-        <h1 class="text-dark fw-bold mb-3 mb-md-0">{{ lesson.title }}</h1>
-        <a
-          href="/lesson/{{ lesson.id }}/edit"
-          class="btn btn-outline-warning btn-sm text-nowrap"
-          >📝 Редактировать</a
-        >
-      </div>
-      <hr class="mt-0 mb-4 text-muted" />
-
-      <!-- Контейнер Markdown -->
-      <div class="markdown-body">{{ html_summary | safe }}</div>
-
-      <!-- Кнопка "На главную" снизу урока -->
-      <div class="mt-5 pt-4 border-top text-center">
-        <a
-          href="/"
-          class="btn btn-primary px-4 py-2 shadow-sm d-inline-flex align-items-center"
-          style="border-radius: 8px"
-        >
-          <span class="me-2">🏠</span> На главную
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Боковая панель (3 колонки на ПК, 12 на мобилке) -->
-  <div class="col-lg-3">
-    <div class="card p-4 bg-white sticky-top" style="top: 20px">
-      <h5 class="fw-bold">Информация</h5>
-      <hr />
-      <div class="mb-3">
-        <small class="text-muted d-block mb-1">Раздел:</small>
-        <span class="fw-semibold">{{ lesson.course_name }}</span>
-      </div>
-      <div class="mb-3">
-        <small class="text-muted d-block mb-1">Добавлено:</small>
-        <span>{{ lesson.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-      </div>
-
-      <hr />
-      <h6 class="fw-bold mb-3">Материалы RAG</h6>
-      {% if lesson.srt_content %}
-      <div class="alert alert-success p-2 text-center" role="alert">
-        <small>✅ Субтитры (SRT) загружены</small>
-      </div>
       {% else %}
-      <div class="alert alert-secondary p-2 text-center" role="alert">
-        <small>❌ Нет файла субтитров</small>
-      </div>
+      <span
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-100 text-zinc-300 cursor-not-allowed"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+      </span>
+      {% endif %}
+
+      <!-- Цифры страниц -->
+      {% for item in pagination_items %} {% if item.type == "page" %} {% if
+      item.is_current %}
+      <!-- Текущая выбранная страница -->
+      <span
+        class="w-9 h-9 flex items-center justify-center rounded-lg bg-zinc-900 text-white font-semibold text-sm select-none"
+      >
+        {{ item.number }}
+      </span>
+      {% else %}
+      <!-- Другие страницы -->
+      <a
+        href="/lesson/{{ item.id }}"
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:border-zinc-300 transition-colors duration-200 text-sm font-medium"
+      >
+        {{ item.number }}
+      </a>
+      {% endif %} {% elif item.type == "ellipsis" %}
+      <!-- Троеточие -->
+      <span
+        class="w-9 h-9 flex items-center justify-center text-zinc-400 text-sm select-none"
+      >
+        ...
+      </span>
+      {% endif %} {% endfor %}
+
+      <!-- Стрелочка Вперед -->
+      {% if next_lesson %}
+      <a
+        href="/lesson/{{ next_lesson.id }}"
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:border-zinc-300 transition-colors duration-200"
+        title="Следующий урок"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </a>
+      {% else %}
+      <span
+        class="w-9 h-9 flex items-center justify-center rounded-lg border border-zinc-100 text-zinc-300 cursor-not-allowed"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </span>
       {% endif %}
     </div>
+  </article>
+
+  <!-- Сайдбар (Материалы) -->
+  <aside class="w-full lg:w-80 shrink-0">
+    <div class="sticky top-24 space-y-6">
+      <div class="bg-white border border-zinc-200 rounded-xl p-6">
+        <h3
+          class="text-sm font-bold uppercase tracking-wider text-zinc-950 mb-4"
+        >
+          Исходные файлы
+        </h3>
+
+        {% if lesson.summary_file_path %}
+        <a
+          href="/{{ lesson.summary_file_path }}"
+          download
+          class="flex items-center justify-between p-3 border border-zinc-200 rounded-lg hover:border-zinc-400 transition-colors mb-3 group"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-xl">📄</span>
+            <span
+              class="text-sm font-medium text-zinc-900 group-hover:underline"
+              >Конспект (.md)</span
+            >
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="text-zinc-400"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </a>
+        {% endif %} {% if lesson.srt_file_path %}
+        <a
+          href="/{{ lesson.srt_file_path }}"
+          download
+          class="flex items-center justify-between p-3 border border-zinc-200 rounded-lg hover:border-zinc-400 transition-colors group"
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-xl">🎞️</span>
+            <span
+              class="text-sm font-medium text-zinc-900 group-hover:underline"
+              >Субтитры (.srt)</span
+            >
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="text-zinc-400"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </a>
+        {% else %}
+        <div
+          class="p-3 bg-zinc-50 border border-zinc-100 rounded-lg text-sm text-zinc-500 flex items-center gap-2"
+        >
+          <span class="text-zinc-400">Нет субтитров</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <form
+        action="/lesson/{{ lesson.id }}/delete"
+        method="post"
+        onsubmit="return confirm('Удалить урок навсегда?');"
+      >
+        <button
+          type="submit"
+          class="w-full text-center text-sm font-medium text-red-600 py-2 hover:bg-red-50 rounded-md transition-colors"
+        >
+          Удалить урок
+        </button>
+      </form>
+    </div>
+  </aside>
+</div>
+
+<!-- Выезжающее меню (Offcanvas) -->
+<div
+  id="sidebarOverlay"
+  class="fixed inset-0 bg-zinc-950/20 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"
+  onclick="toggleSidebar()"
+></div>
+<div
+  id="sidebarMenu"
+  class="fixed top-0 left-0 h-full w-80 bg-white border-r border-zinc-200 shadow-2xl z-50 transform -translate-x-full transition-transform duration-300 flex flex-col"
+>
+  <div class="p-6 border-b border-zinc-100 flex justify-between items-start">
+    <div>
+      <p class="text-xs font-semibold uppercase text-zinc-500 mb-1">
+        Оглавление
+      </p>
+      <h2 class="text-lg font-bold text-zinc-900 leading-tight">
+        {{ course.name }}
+      </h2>
+    </div>
+    <button
+      onclick="toggleSidebar()"
+      class="text-zinc-400 hover:text-zinc-900 p-1"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+  <div class="flex-grow overflow-y-auto p-4 space-y-1">
+    {% for cl in course_lessons %}
+    <a
+      href="/lesson/{{ cl.id }}"
+      class="flex items-center gap-3 p-3 rounded-lg text-sm {% if cl.id == lesson.id %}bg-zinc-900 text-white font-medium{% else %}text-zinc-600 hover:bg-zinc-100{% endif %} transition-colors"
+    >
+      <span class="w-6 text-center opacity-50">{{ cl.order_number }}</span>
+      <span class="flex-grow truncate">{{ cl.title }}</span>
+    </a>
+    {% endfor %}
   </div>
 </div>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebarMenu");
+    const overlay = document.getElementById("sidebarOverlay");
+
+    if (sidebar.classList.contains("-translate-x-full")) {
+      // Открыть
+      overlay.classList.remove("hidden");
+      // Маленькая задержка для плавности opacity
+      setTimeout(() => overlay.classList.remove("opacity-0"), 10);
+      sidebar.classList.remove("-translate-x-full");
+    } else {
+      // Закрыть
+      overlay.classList.add("opacity-0");
+      sidebar.classList.add("-translate-x-full");
+      setTimeout(() => overlay.classList.add("hidden"), 300);
+    }
+  }
+</script>
 {% endblock %}

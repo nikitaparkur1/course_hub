@@ -1,70 +1,182 @@
 {% extends "base.html" %} {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-10">
-    <div class="card p-4 p-md-5 bg-white">
-      <div class="d-flex align-items-center mb-4">
-        <a href="/lesson/{{ lesson.id }}" class="btn btn-light border me-3"
-          >← Назад</a
+<div class="max-w-3xl mx-auto">
+  <div class="mb-8">
+    <a
+      href="/lesson/{{ lesson.id }}"
+      class="text-sm text-zinc-500 hover:text-zinc-900 flex items-center gap-2 w-fit mb-4"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m15 18-6-6 6-6" />
+      </svg>
+      Назад к уроку
+    </a>
+    <h1 class="text-3xl font-bold tracking-tight text-zinc-950">
+      Редактирование урока
+    </h1>
+    <p class="text-zinc-500 mt-2">
+      Вы можете изменить текстовое содержимое в браузере или полностью заменить
+      файлы.
+    </p>
+  </div>
+
+  <form
+    action="/lesson/{{ lesson.id }}/edit"
+    method="post"
+    enctype="multipart/form-data"
+    class="bg-white border border-zinc-200 rounded-2xl p-8 space-y-8"
+  >
+    <!-- Основная информация -->
+    <div class="space-y-4">
+      <h3 class="text-lg font-bold text-zinc-900 border-b border-zinc-100 pb-2">
+        Информация об уроке
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="md:col-span-3">
+          <label
+            for="title"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Тема урока</label
+          >
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            value="{{ lesson.title }}"
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+            placeholder="Установка окружения"
+          />
+        </div>
+        <div>
+          <label
+            for="order_number"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Номер по порядку</label
+          >
+          <input
+            type="number"
+            id="order_number"
+            name="order_number"
+            required
+            value="{{ lesson.order_number }}"
+            min="1"
+            class="w-full px-4 py-2 bg-white border border-zinc-300 rounded-md text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Текстовый редактор Markdown -->
+    <div class="space-y-4">
+      <div
+        class="flex justify-between items-center border-b border-zinc-100 pb-2"
+      >
+        <h3 class="text-lg font-bold text-zinc-900">Содержимое (Markdown)</h3>
+        <span class="text-xs text-zinc-400 font-mono"
+          >Поддерживается разметка MD</span
         >
-        <h2 class="m-0 fw-bold text-dark">Редактирование урока</h2>
       </div>
 
-      <form action="/lesson/{{ lesson.id }}/edit" method="post">
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="course_name" class="form-label fw-semibold"
-              >Курс / Модуль</label
-            >
-            <input
-              type="text"
-              class="form-control"
-              id="course_name"
-              name="course_name"
-              value="{{ lesson.course_name }}"
-              required
-            />
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="title" class="form-label fw-semibold"
-              >Название урока</label
-            >
-            <input
-              type="text"
-              class="form-control"
-              id="title"
-              name="title"
-              value="{{ lesson.title }}"
-              required
-            />
-          </div>
-        </div>
-
-        <div class="mb-4 mt-3">
-          <label for="summary_content" class="form-label fw-semibold"
-            >Содержимое (Markdown)</label
-          >
-          <textarea
-            class="form-control bg-light"
-            id="summary_content"
-            name="summary_content"
-            rows="20"
-            required
-            style="
-              font-family: &quot;Courier New&quot;, Courier, monospace;
-              font-size: 0.9rem;
-            "
-          >
+      <div>
+        <textarea
+          id="summary_content"
+          name="summary_content"
+          rows="18"
+          required
+          class="w-full p-4 bg-zinc-50 border border-zinc-300 rounded-lg text-sm text-zinc-900 font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-500 transition-colors"
+          placeholder="# Введение в тему..."
+        >
 {{ lesson.summary_content }}</textarea
+        >
+      </div>
+    </div>
+
+    <!-- Замена файлов -->
+    <div class="space-y-4">
+      <div class="border-b border-zinc-100 pb-2">
+        <h3 class="text-lg font-bold text-zinc-900">Заменить файлы</h3>
+        <p class="text-xs text-zinc-400 mt-1">
+          Оставьте поля пустыми, если не хотите перезаписывать текущие файлы.
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label
+            for="summary_file"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Новый файл конспекта (.md)</label
           >
+          <input
+            type="file"
+            id="summary_file"
+            name="summary_file"
+            accept=".md"
+            class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 transition-colors"
+          />
+          {% if lesson.summary_file_path %}
+          <p class="text-xs text-zinc-400 mt-1">
+            Текущий файл:
+            <span class="font-mono text-zinc-500"
+              >{{ lesson.summary_file_path.split('_', 1)[-1] if '_' in
+              lesson.summary_file_path else lesson.summary_file_path }}</span
+            >
+          </p>
+          {% endif %}
         </div>
 
-        <div class="d-flex gap-3 justify-content-end">
-          <button type="submit" class="btn btn-primary btn-lg px-5">
-            Сохранить
-          </button>
+        <div class="pt-2">
+          <label
+            for="srt_file"
+            class="block text-sm font-medium text-zinc-700 mb-1"
+            >Новый файл субтитров (.srt)</label
+          >
+          <input
+            type="file"
+            id="srt_file"
+            name="srt_file"
+            accept=".srt"
+            class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 transition-colors"
+          />
+          {% if lesson.srt_file_path %}
+          <p class="text-xs text-zinc-400 mt-1">
+            Текущий файл:
+            <span class="font-mono text-zinc-500"
+              >{{ lesson.srt_file_path.split('_', 1)[-1] if '_' in
+              lesson.srt_file_path else lesson.srt_file_path }}</span
+            >
+          </p>
+          {% endif %}
         </div>
-      </form>
+      </div>
     </div>
-  </div>
+
+    <!-- Кнопки -->
+    <div class="pt-4 flex gap-4 border-t border-zinc-100">
+      <button
+        type="submit"
+        class="px-6 py-2.5 bg-zinc-900 text-white text-sm font-medium rounded-md hover:bg-zinc-800 transition-colors w-full md:w-auto"
+      >
+        Сохранить изменения
+      </button>
+      <a
+        href="/lesson/{{ lesson.id }}"
+        class="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-700 text-sm font-medium rounded-md hover:bg-zinc-50 transition-colors text-center w-full md:w-auto"
+      >
+        Отмена
+      </a>
+    </div>
+  </form>
 </div>
 {% endblock %}

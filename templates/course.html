@@ -1,0 +1,89 @@
+{% extends "base.html" %} {% block content %}
+<div class="mb-8 flex items-center gap-4">
+  <a
+    href="/"
+    class="p-2 border border-zinc-200 rounded-md bg-white hover:bg-zinc-50 transition-colors text-zinc-600"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  </a>
+  <nav class="text-sm font-medium text-zinc-500">
+    <a href="/" class="hover:text-zinc-900">Главная</a>
+    <span class="mx-2">/</span>
+    <span class="text-zinc-900">{{ course.name }}</span>
+  </nav>
+</div>
+
+<div class="bg-white border border-zinc-200 rounded-2xl p-8 mb-10">
+  <div
+    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8"
+  >
+    <div>
+      <p
+        class="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-2"
+      >
+        {{ course.author or "Без автора" }}
+      </p>
+      <h1 class="text-3xl font-bold tracking-tight text-zinc-950">
+        {{ course.name }}
+      </h1>
+    </div>
+    <a
+      href="/upload"
+      class="inline-flex px-4 py-2 border border-zinc-200 bg-white text-zinc-900 text-sm font-medium rounded-md hover:bg-zinc-50 transition-colors"
+    >
+      + Добавить урок
+    </a>
+  </div>
+
+  <div class="space-y-3">
+    {% for lesson in lessons %}
+    <a
+      href="/lesson/{{ lesson.id }}"
+      class="flex items-center p-4 border border-zinc-100 bg-zinc-50/50 rounded-lg hover:border-zinc-300 hover:bg-white transition-all group"
+    >
+      <div
+        class="w-10 h-10 rounded-md bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold text-sm mr-4"
+      >
+        {{ lesson.order_number }}
+      </div>
+      <div class="flex-grow">
+        <h3 class="text-base font-semibold text-zinc-900">
+          {{ lesson.title }}
+        </h3>
+        <p class="text-xs text-zinc-500 mt-1">
+          Добавлен: {{ lesson.created_at.strftime('%d.%m.%Y') }}
+        </p>
+      </div>
+      <div class="text-zinc-400 group-hover:text-zinc-900 transition-colors">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
