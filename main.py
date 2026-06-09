@@ -7,29 +7,23 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Upload
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy import func, or_
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload  # Для асинхронной подгрузки связей
 
 from database import Base, engine, get_db
-from models import Course, Lesson
+from models import Course, Lesson, Subcategory
 
-# Инициализация приложения
 app = FastAPI(title="Course Hub UI/UX Edition")
 
-# Создаем папку для загрузок, если ее нет
 os.makedirs("uploads", exist_ok=True)
-
-# Монтируем статику для отдачи сохраненных файлов по прямой ссылке
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-# Подключаем Jinja2 шаблоны
 templates = Jinja2Templates(directory="templates")
 
 
 @app.on_event("startup")
 async def startup():
-    """Создаем таблицы в базе данных при запуске приложения."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
@@ -37,18 +31,14 @@ async def startup():
 async def save_upload_file(
     upload_file: UploadFile, dest_dir: str = "uploads"
 ) -> str | None:
-    """Вспомогательная функция для асинхронного сохранения файлов на диск."""
     if not upload_file or not upload_file.filename:
         return None
-
     unique_name = f"{uuid.uuid4().hex}_{upload_file.filename}"
     file_path = os.path.join(dest_dir, unique_name)
-
     async with aiofiles.open(file_path, "wb") as out_file:
         content = await upload_file.read()
         await out_file.write(content)
         await upload_file.seek(0)
-
     return file_path
 
 
@@ -56,10 +46,11 @@ async def save_upload_file(
 async def index_page(
     request: Request, q: str = None, db: AsyncSession = Depends(get_db)
 ):
-    """Главная страница: список модулей (курсов) с поиском по названию и автору."""
+    """Главная страница: список курсов."""
     query = select(Course)
     if q:
-        # Ищем совпадения ИЛИ в названии курса, ИЛИ в имени автора (без учета регистра)
+        from sqlalchemy import or_
+
         query = query.filter(
             or_(Course.name.ilike(f"%{q}%"), Course.author.ilike(f"%{q}%"))
         )
@@ -67,11 +58,14 @@ async def index_page(
     result = await db.execute(query.order_by(Course.created_at.desc()))
     courses = result.scalars().all()
 
-    # Подсчет уроков для каждого курса
     courses_with_counts = []
     for c in courses:
+        # Считаем количество уроков через подкатегории
         count_res = await db.execute(
-            select(func.count()).select_from(Lesson).filter(Lesson.course_id == c.id)
+            select(func.count(Lesson.id))
+            .select_from(Lesson)
+            .join(Subcategory)
+            .filter(Subcategory.course_id == c.id)
         )
         lesson_count = count_res.scalar()
         courses_with_counts.append({"course": c, "lesson_count": lesson_count})
@@ -87,24 +81,25 @@ async def index_page(
 async def course_page(
     course_id: int, request: Request, db: AsyncSession = Depends(get_db)
 ):
-    """Страница отдельного модуля: список уроков внутри него."""
+    """Страница курса: отображает подразделы (модули) и уроки внутри них."""
     result = await db.execute(select(Course).filter(Course.id == course_id))
     course = result.scalar_one_or_none()
     if not course:
         raise HTTPException(status_code=404, detail="Курс не найден")
 
-    res_lessons = await db.execute(
-        select(Lesson)
-        .filter(Lesson.course_id == course.id)
-        .order_by(Lesson.order_number)
+    # Мы убрали .order_by() из selectinload. Сортировка уроков теперь происходит автоматически!
+    res_subs = await db.execute(
+        select(Subcategory)
+        .filter(Subcategory.course_id == course.id)
+        .options(selectinload(Subcategory.lessons))
+        .order_by(Subcategory.order_number)
     )
-    lessons = res_lessons.scalars().all()
+    subcategories = res_subs.scalars().all()
 
-    # ИСПОЛЬЗУЕМ ЯВНЫЕ КЛЮЧЕВЫЕ АРГУМЕНТЫ
     return templates.TemplateResponse(
         request=request,
         name="course.html",
-        context={"course": course, "lessons": lessons},
+        context={"course": course, "subcategories": subcategories},
     )
 
 
@@ -112,43 +107,53 @@ async def course_page(
 async def lesson_page(
     lesson_id: int, request: Request, db: AsyncSession = Depends(get_db)
 ):
-    """Страница чтения урока и просмотра материалов."""
+    """Страница чтения урока."""
     result = await db.execute(select(Lesson).filter(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(status_code=404, detail="Урок не найден")
 
-    course_res = await db.execute(select(Course).filter(Course.id == lesson.course_id))
+    sub_res = await db.execute(
+        select(Subcategory).filter(Subcategory.id == lesson.subcategory_id)
+    )
+    current_subcategory = sub_res.scalar_one()
+
+    course_res = await db.execute(
+        select(Course).filter(Course.id == current_subcategory.course_id)
+    )
     course = course_res.scalar_one()
 
-    # Загружаем все уроки текущего модуля для навигации
-    course_lessons_res = await db.execute(
-        select(Lesson)
-        .filter(Lesson.course_id == course.id)
-        .order_by(Lesson.order_number)
+    # Мы убрали .order_by() из selectinload. Сортировка уроков теперь происходит автоматически!
+    course_structure_res = await db.execute(
+        select(Subcategory)
+        .filter(Subcategory.course_id == course.id)
+        .options(selectinload(Subcategory.lessons))
+        .order_by(Subcategory.order_number)
     )
-    course_lessons = course_lessons_res.scalars().all()
+    subcategories = course_structure_res.scalars().all()
 
-    # Поиск предыдущего и следующего урока
+    # Сплющиваем список уроков для постраничной навигации
+    all_lessons = []
+    for sub in subcategories:
+        all_lessons.extend(sub.lessons)
+
     prev_lesson = None
     next_lesson = None
     current_idx = 0
-    for idx, cl in enumerate(course_lessons):
+    for idx, cl in enumerate(all_lessons):
         if cl.id == lesson.id:
             current_idx = idx
             if idx > 0:
-                prev_lesson = course_lessons[idx - 1]
-            if idx < len(course_lessons) - 1:
-                next_lesson = course_lessons[idx + 1]
+                prev_lesson = all_lessons[idx - 1]
+            if idx < len(all_lessons) - 1:
+                next_lesson = all_lessons[idx + 1]
             break
 
-    # Строим список страниц для умной пагинации с троеточиями (...)
-    total = len(course_lessons)
+    # Строим список страниц для умной пагинации
+    total = len(all_lessons)
     pagination_items = []
-
     if total <= 7:
-        # Если страниц мало, просто выводим их все по порядку
-        for i, cl in enumerate(course_lessons):
+        for i, cl in enumerate(all_lessons):
             pagination_items.append(
                 {
                     "type": "page",
@@ -158,27 +163,22 @@ async def lesson_page(
                 }
             )
     else:
-        # Всегда показываем первую страницу
         pagination_items.append(
             {
                 "type": "page",
-                "id": course_lessons[0].id,
-                "number": course_lessons[0].order_number or 1,
-                "is_current": course_lessons[0].id == lesson.id,
+                "id": all_lessons[0].id,
+                "number": all_lessons[0].order_number or 1,
+                "is_current": all_lessons[0].id == lesson.id,
             }
         )
-
-        # Левое троеточие
         start = max(1, current_idx - 1)
         if start > 1:
             pagination_items.append({"type": "ellipsis"})
         else:
             start = 1
-
-        # Среднее "окно" из страниц вокруг текущей
         end = min(total - 1, current_idx + 2)
         for i in range(start, end):
-            cl = course_lessons[i]
+            cl = all_lessons[i]
             pagination_items.append(
                 {
                     "type": "page",
@@ -187,22 +187,17 @@ async def lesson_page(
                     "is_current": cl.id == lesson.id,
                 }
             )
-
-        # Правое троеточие
         if end < total - 1:
             pagination_items.append({"type": "ellipsis"})
-
-        # Всегда показываем последнюю страницу
         pagination_items.append(
             {
                 "type": "page",
-                "id": course_lessons[-1].id,
-                "number": course_lessons[-1].order_number or total,
-                "is_current": course_lessons[-1].id == lesson.id,
+                "id": all_lessons[-1].id,
+                "number": all_lessons[-1].order_number or total,
+                "is_current": all_lessons[-1].id == lesson.id,
             }
         )
 
-    # Преобразуем Markdown в HTML
     html_summary = markdown.markdown(
         lesson.summary_content or "", extensions=["fenced_code", "tables"]
     )
@@ -213,7 +208,7 @@ async def lesson_page(
         context={
             "lesson": lesson,
             "course": course,
-            "course_lessons": course_lessons,
+            "subcategories": subcategories,
             "html_summary": html_summary,
             "prev_lesson": prev_lesson,
             "next_lesson": next_lesson,
@@ -223,20 +218,24 @@ async def lesson_page(
 
 
 @app.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request, db: AsyncSession = Depends(get_db)):
-    """Страница формы добавления нового урока."""
+async def upload_page(
+    request: Request, course_name: str = None, db: AsyncSession = Depends(get_db)
+):
+    """Страница формы добавления. Автоматически принимает параметр course_name из GET-запроса."""
     res = await db.execute(select(Course).order_by(Course.name))
     courses = res.scalars().all()
 
-    # ИСПОЛЬЗУЕМ ЯВНЫЕ КЛЮЧЕВЫЕ АРГУМЕНТЫ
     return templates.TemplateResponse(
-        request=request, name="upload.html", context={"courses": courses}
+        request=request,
+        name="upload.html",
+        context={"courses": courses, "prefilled_course": course_name},
     )
 
 
 @app.post("/upload")
 async def handle_upload(
     course_name: str = Form(...),
+    subcategory_name: str = Form(...),  # Новое поле: Подраздел
     author: str = Form(""),
     title: str = Form(...),
     order_number: int = Form(1),
@@ -244,15 +243,27 @@ async def handle_upload(
     srt_file: UploadFile = File(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Обработчик сохранения нового урока и создания модуля, если его нет."""
     course_name = course_name.strip()
+    subcategory_name = subcategory_name.strip()
 
+    # Ищем или создаем курс
     course_res = await db.execute(select(Course).filter(Course.name == course_name))
     course = course_res.scalar_one_or_none()
-
     if not course:
         course = Course(name=course_name, author=author.strip())
         db.add(course)
+        await db.flush()
+
+    # Ищем или создаем подраздел (модуль) внутри этого курса
+    sub_res = await db.execute(
+        select(Subcategory).filter(
+            Subcategory.course_id == course.id, Subcategory.name == subcategory_name
+        )
+    )
+    subcategory = sub_res.scalar_one_or_none()
+    if not subcategory:
+        subcategory = Subcategory(course_id=course.id, name=subcategory_name)
+        db.add(subcategory)
         await db.flush()
 
     summary_path = await save_upload_file(summary_file)
@@ -265,7 +276,7 @@ async def handle_upload(
         summary_content = (await summary_file.read()).decode("utf-8")
 
     new_lesson = Lesson(
-        course_id=course.id,
+        subcategory_id=subcategory.id,
         title=title,
         order_number=order_number,
         summary_content=summary_content,
@@ -282,13 +293,11 @@ async def handle_upload(
 async def edit_page(
     lesson_id: int, request: Request, db: AsyncSession = Depends(get_db)
 ):
-    """Страница редактирования существующего урока."""
     result = await db.execute(select(Lesson).filter(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(status_code=404, detail="Урок не найден")
 
-    # ИСПОЛЬЗУЕМ ЯВНЫЕ КЛЮЧЕВЫЕ АРГУМЕНТЫ
     return templates.TemplateResponse(
         request=request, name="edit.html", context={"lesson": lesson}
     )
@@ -304,7 +313,6 @@ async def handle_edit(
     srt_file: UploadFile = File(None),
     db: AsyncSession = Depends(get_db),
 ):
-    """Обработчик обновления урока."""
     result = await db.execute(select(Lesson).filter(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
@@ -327,26 +335,54 @@ async def handle_edit(
 
 @app.post("/lesson/{lesson_id}/delete")
 async def delete_lesson(lesson_id: int, db: AsyncSession = Depends(get_db)):
-    """Удаление урока с проверкой на 'пустой модуль'."""
+    """Каскадное удаление: если подраздел пустеет — удаляем его. Если курс пустеет — удаляем курс."""
     result = await db.execute(select(Lesson).filter(Lesson.id == lesson_id))
     lesson = result.scalar_one_or_none()
     if not lesson:
         raise HTTPException(status_code=404, detail="Урок не найден")
 
-    course_id = lesson.course_id
+    subcategory_id = lesson.subcategory_id
     await db.delete(lesson)
     await db.commit()
 
+    # 1. Проверяем уроки в подкатегории
     count_res = await db.execute(
-        select(func.count()).select_from(Lesson).filter(Lesson.course_id == course_id)
+        select(func.count())
+        .select_from(Lesson)
+        .filter(Lesson.subcategory_id == subcategory_id)
     )
-    remaining_lessons = count_res.scalar()
+    if count_res.scalar() == 0:
+        sub_res = await db.execute(
+            select(Subcategory).filter(Subcategory.id == subcategory_id)
+        )
+        subcategory = sub_res.scalar_one()
+        course_id = subcategory.course_id
 
-    if remaining_lessons == 0:
-        course_res = await db.execute(select(Course).filter(Course.id == course_id))
-        course = course_res.scalar_one()
-        await db.delete(course)
+        # Удаляем подкатегорию
+        await db.delete(subcategory)
         await db.commit()
-        return RedirectResponse(url="/", status_code=303)
 
-    return RedirectResponse(url=f"/course/{course_id}", status_code=303)
+        # 2. Проверяем подкатегории в курсе
+        count_subs = await db.execute(
+            select(func.count())
+            .select_from(Subcategory)
+            .filter(Subcategory.course_id == course_id)
+        )
+        if count_subs.scalar() == 0:
+            course_res = await db.execute(select(Course).filter(Course.id == course_id))
+            course = course_res.scalar_one()
+
+            # Удаляем пустой курс
+            await db.delete(course)
+            await db.commit()
+            return RedirectResponse(url="/", status_code=303)
+
+        return RedirectResponse(url=f"/course/{course_id}", status_code=303)
+
+    # Если уроки еще есть
+    sub_res = await db.execute(
+        select(Subcategory).filter(Subcategory.id == subcategory_id)
+    )
+    return RedirectResponse(
+        url=f"/course/{sub_res.scalar_one().course_id}", status_code=303
+    )

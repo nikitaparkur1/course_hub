@@ -27,7 +27,7 @@
 
 <div class="bg-white border border-zinc-200 rounded-2xl p-8 mb-10">
   <div
-    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8"
+    class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10"
   >
     <div>
       <p
@@ -39,50 +39,67 @@
         {{ course.name }}
       </h1>
     </div>
+    <!-- Передаем имя текущего курса в форму добавления -->
     <a
-      href="/upload"
+      href="/upload?course_name={{ course.name | urlencode }}"
       class="inline-flex px-4 py-2 border border-zinc-200 bg-white text-zinc-900 text-sm font-medium rounded-md hover:bg-zinc-50 transition-colors"
     >
       + Добавить урок
     </a>
   </div>
 
-  <div class="space-y-3">
-    {% for lesson in lessons %}
-    <a
-      href="/lesson/{{ lesson.id }}"
-      class="flex items-center p-4 border border-zinc-100 bg-zinc-50/50 rounded-lg hover:border-zinc-300 hover:bg-white transition-all group"
-    >
-      <div
-        class="w-10 h-10 rounded-md bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold text-sm mr-4"
-      >
-        {{ lesson.order_number }}
-      </div>
-      <div class="flex-grow">
-        <h3 class="text-base font-semibold text-zinc-900">
-          {{ lesson.title }}
-        </h3>
-        <p class="text-xs text-zinc-500 mt-1">
-          Добавлен: {{ lesson.created_at.strftime('%d.%m.%Y') }}
-        </p>
-      </div>
-      <div class="text-zinc-400 group-hover:text-zinc-900 transition-colors">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
+  <!-- Список вложенных подразделов (Модулей) -->
+  <div class="space-y-12">
+    {% for subcategory in subcategories %}
+    <div>
+      <!-- Название подраздела -->
+      <h2 class="text-lg font-bold text-zinc-800 mb-4 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-zinc-400"></span>
+        {{ subcategory.name }}
+      </h2>
+
+      <!-- Список уроков подраздела -->
+      <div class="space-y-3 pl-3.5 border-l border-zinc-100">
+        {% for lesson in subcategory.lessons %}
+        <a
+          href="/lesson/{{ lesson.id }}"
+          class="flex items-center p-4 border border-zinc-100 bg-zinc-50/50 rounded-lg hover:border-zinc-300 hover:bg-white transition-all group"
         >
-          <path d="M5 12h14"></path>
-          <path d="m12 5 7 7-7 7"></path>
-        </svg>
+          <div
+            class="w-10 h-10 rounded-md bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold text-sm mr-4"
+          >
+            {{ lesson.order_number }}
+          </div>
+          <div class="flex-grow">
+            <h3 class="text-base font-semibold text-zinc-900">
+              {{ lesson.title }}
+            </h3>
+            <p class="text-xs text-zinc-500 mt-1">
+              Добавлен: {{ lesson.created_at.strftime('%d.%m.%Y') }}
+            </p>
+          </div>
+          <div
+            class="text-zinc-400 group-hover:text-zinc-900 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          </div>
+        </a>
+        {% endfor %}
       </div>
-    </a>
+    </div>
     {% endfor %}
   </div>
 </div>
